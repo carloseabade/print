@@ -1,0 +1,75 @@
+#!/bin/bash
+
+NAME="print"
+
+[[ -z $HOME ]] && { echo "$NAME: \$HOME must be set"; exit 1; }
+
+SCREENSHOTS_DIR="$HOME/Screenshots"
+
+[[ -d $SCREENSHOTS_DIR ]] || mkdir -p $SCREENSHOTS_DIR
+
+FORMAT="png"
+OUTPUT="$SCREENSHOTS_DIR/$(date +%Y%m%d_%H%M%S)"
+
+_set_select() {
+	OUTPUT="/tmp/$(date +%Y%m%d_%H%M%S)"
+	SELECT="-s"
+}
+
+_invalid_format() {
+	echo -e "$NAME: '$1' is not a valid format.\nSee '$NAME --help'"
+	exit 1
+}
+
+_set_format() {
+	case $1 in
+		"png" | "jpg" | "bmp" | "webp") FORMAT=$1;;
+		*) _invalid_format $1;;
+	esac
+}
+
+_print_help() {
+#############################################################################
+# This is just to measure max lenght for help message
+	echo "
+SYNOPSIS
+	$NAME [OPTION] [FILEPATH]
+
+DESCRIPTION
+	print is a wrapper for maim utility. By default it prints the whole 
+	window and save on ~/Screenshots as a png.
+
+OPTIONS
+	-h, --help
+		Print help and exit
+
+	-f, --format
+		Sets the desired output format. Supported formats 'png',
+		'jpg', 'bmp', and 'webp'.
+
+	-s, --select
+		Enables an interactive selection mode"
+	exit 1;
+}
+
+_print_option_not_found() {
+	echo -e "$NAME: '${@}' is not a $NAME option.\nSee '$NAME --help'"
+	exit 1;
+}
+
+_exec_maim() {
+	maim -u -f $FORMAT $SELECT | tee "$OUTPUT.$FORMAT" | xclip -selection clipboard -t image/png
+}
+
+while [[ -n $1 ]]
+do
+	case $1 in
+		"-s" | "--select") _set_select;;
+		"-f" | "--format") _set_format $2; shift;;
+		"-h" | "--help") _print_help;;
+		*) _print_option_not_found "$@";;
+	esac
+	shift
+done
+
+_exec_maim
