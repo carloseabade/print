@@ -2,6 +2,8 @@
 
 NAME="print"
 
+which maim >/dev/null 2>&1 && [[ $? -ne 0 ]] && { echo "$NAME: maim is not installed"; exit 1; }
+
 [[ -z $HOME ]] && { echo "$NAME: \$HOME must be set"; exit 1; }
 
 SCREENSHOTS_DIR="$HOME/Screenshots"
